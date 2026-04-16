@@ -1,0 +1,8 @@
+{
+  "name": "qa-harness-demo-api",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "typescript": "^5.6.0"
+  }
+}

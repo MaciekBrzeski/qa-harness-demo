@@ -1,0 +1,101 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Products API (qa-harness demo)",
+    "version": "1.0.0",
+    "description": "Minimal Products + Categories + Variants API for demonstrating the qa-harness test generation pipeline. Mirrors InvenTree Parts patterns: CRUD, filters, lifecycle constraints (deactivate-before-delete), sub-resources (variants), and hierarchical categories."
+  },
+  "servers": [{ "url": "http://localhost:3456" }],
+  "paths": {
+    "/api/products": {
+      "get": {
+        "summary": "List products",
+        "parameters": [
+          { "name": "category", "in": "query", "schema": { "type": "integer" } },
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["active", "inactive"] } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } },
+          { "name": "offset", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Paginated list" } }
+      },
+      "post": {
+        "summary": "Create product",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProductCreate" } } } },
+        "responses": { "201": { "description": "Created" }, "400": { "description": "Validation error" } }
+      }
+    },
+    "/api/products/{id}": {
+      "get": {
+        "summary": "Retrieve product",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Product detail" }, "404": { "description": "Not found" } }
+      },
+      "patch": {
+        "summary": "Update product",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Updated" }, "404": { "description": "Not found" } }
+      },
+      "delete": {
+        "summary": "Delete product (must be inactive first)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "204": { "description": "Deleted" }, "400": { "description": "Must deactivate first" }, "404": { "description": "Not found" } }
+      }
+    },
+    "/api/products/{id}/variants": {
+      "get": {
+        "summary": "List variants for a product",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Variant list" } }
+      },
+      "post": {
+        "summary": "Add variant to a product",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "201": { "description": "Created" }, "404": { "description": "Product not found" } }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "summary": "List categories",
+        "responses": { "200": { "description": "Category list" } }
+      },
+      "post": {
+        "summary": "Create category",
+        "responses": { "201": { "description": "Created" }, "400": { "description": "Validation error" } }
+      }
+    },
+    "/api/categories/{id}": {
+      "get": {
+        "summary": "Retrieve category",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Category detail" }, "404": { "description": "Not found" } }
+      },
+      "delete": {
+        "summary": "Delete category",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "204": { "description": "Deleted" }, "404": { "description": "Not found" } }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": { "200": { "description": "Server status" } }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProductCreate": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "sku": { "type": "string" },
+          "category": { "type": "integer", "nullable": true },
+          "status": { "type": "string", "enum": ["active", "inactive"], "default": "active" },
+          "price": { "type": "number", "default": 0 }
+        }
+      }
+    }
+  }
+}
