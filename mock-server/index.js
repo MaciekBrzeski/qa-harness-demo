@@ -3,8 +3,10 @@
 // In-memory store, no persistence. ~80 lines.
 
 const express = require('express');
+const path = require('path');
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ── In-memory store ──────────────────────────────────────────────
 let nextId = 100;
@@ -95,6 +97,24 @@ app.delete('/api/categories/:id', (req, res) => {
 
 // ── OpenAPI spec endpoint ────────────────────────────────────────
 app.get('/api/schema', (_req, res) => res.json(require('./openapi.json')));
+
+// ── Reset (re-seed in-memory store for test isolation) ───────────
+app.post('/api/reset', (_req, res) => {
+  products.length = 0;
+  products.push(
+    { id: 1, name: 'Temperature Sensor', sku: 'TS-001', category: 2, status: 'active', price: 12.5 },
+    { id: 2, name: 'Humidity Sensor', sku: 'HS-001', category: 2, status: 'active', price: 8.0 },
+    { id: 3, name: 'Discontinued Board', sku: 'DB-001', category: 1, status: 'inactive', price: 0 },
+  );
+  categories.length = 0;
+  categories.push(
+    { id: 1, name: 'Electronics', parent: null },
+    { id: 2, name: 'Sensors', parent: 1 },
+  );
+  variants.length = 0;
+  nextId = 100;
+  res.json({ status: 'reset' });
+});
 
 // ── Health ───────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', version: '1.0.0' }));
